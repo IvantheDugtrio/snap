@@ -244,8 +244,8 @@ public:
             _mm_prefetch(bases + GenomeLocationAsInt64(genomeLocation), _MM_HINT_T2);
             _mm_prefetch(bases + GenomeLocationAsInt64(genomeLocation) + 64, _MM_HINT_T2);
 #elif __PPC64__
-            _mm_prefetch(bases + GenomeLocationAsInt64(genomeLocation), _MM_HINT_T2);
-            _mm_prefetch(bases + GenomeLocationAsInt64(genomeLocation) + 64, _MM_HINT_T2);
+            vec_prefetch(bases + GenomeLocationAsInt64(genomeLocation), _MM_HINT_T2);
+            vec_prefetch(bases + GenomeLocationAsInt64(genomeLocation) + 64, _MM_HINT_T2);
 #endif
         }
 
