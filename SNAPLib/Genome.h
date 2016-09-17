@@ -205,43 +205,48 @@ public:
         //
         // Methods to read the genome.
         //
-		inline const char *getSubstring(GenomeLocation location, GenomeDistance lengthNeeded) const {
-			if (location > nBases || location + lengthNeeded > nBases + N_PADDING) {
-				// The first part of the test is for the unsigned version of a negative offset.
-				return NULL;
-			}
+        inline const char *getSubstring(GenomeLocation location, GenomeDistance lengthNeeded) const {
+            if (location > nBases || location + lengthNeeded > nBases + N_PADDING) {
+                // The first part of the test is for the unsigned version of a negative offset.
+                return NULL;
+            }
 
-			// If we're in the padding, then the base will be an n, and we can't short circuit.  Recall that we use lower case n in the reference so it won't match with N in the read.
-			if (lengthNeeded <= chromosomePadding && bases[GenomeLocationAsInt64(location)] != 'n') {
-				return bases + (location - minLocation);
-			}
+            // If we're in the padding, then the base will be an n, and we can't short circuit.  Recall that we use lower case n in the reference so it won't match with N in the read.
+            if (lengthNeeded <= chromosomePadding && bases[GenomeLocationAsInt64(location)] != 'n') {
+                return bases + (location - minLocation);
+            }
 
-			_ASSERT(location >= minLocation && location + lengthNeeded <= maxLocation + N_PADDING); // If the caller asks for a genome slice, it's only legal to look within it.
+            _ASSERT(location >= minLocation && location + lengthNeeded <= maxLocation + N_PADDING); // If the caller asks for a genome slice, it's only legal to look within it.
 
-			if (lengthNeeded == 0) {
-				return bases + (location - minLocation);
-			}
+            if (lengthNeeded == 0) {
+                return bases + (location - minLocation);
+            }
 
-			const Contig *contig = getContigAtLocation(location);
-			if (NULL == contig) {
-				return NULL;
-			}
+            const Contig *contig = getContigAtLocation(location);
+            if (NULL == contig) {
+                return NULL;
+            }
 
-			_ASSERT(contig->beginningLocation <= location && contig->beginningLocation + contig->length >= location);
-			if (contig->beginningLocation + contig->length <= location + lengthNeeded) {
-				return NULL;
-			}
+            _ASSERT(contig->beginningLocation <= location && contig->beginningLocation + contig->length >= location);
+            if (contig->beginningLocation + contig->length <= location + lengthNeeded) {
+                return NULL;
+            }
 
-			return bases + (location - minLocation);
-		}
+            return bases + (location - minLocation);
+        }
 
         inline GenomeDistance getCountOfBases() const {return nBases;}
 
         bool getLocationOfContig(const char *contigName, GenomeLocation *location, int* index = NULL) const;
 
         inline void prefetchData(GenomeLocation genomeLocation) const {
+#ifdef __SSE__
             _mm_prefetch(bases + GenomeLocationAsInt64(genomeLocation), _MM_HINT_T2);
             _mm_prefetch(bases + GenomeLocationAsInt64(genomeLocation) + 64, _MM_HINT_T2);
+#elif __PPC64__
+            _mm_prefetch(bases + GenomeLocationAsInt64(genomeLocation), _MM_HINT_T2);
+            _mm_prefetch(bases + GenomeLocationAsInt64(genomeLocation) + 64, _MM_HINT_T2);
+#endif
         }
 
         struct Contig {
@@ -299,7 +304,7 @@ private:
 
         const unsigned chromosomePadding;
 
-		GenericFile_map *mappedFile;
+        GenericFile_map *mappedFile;
 };
 
 GenomeDistance DistanceBetweenGenomeLocations(GenomeLocation locationA, GenomeLocation locationB);

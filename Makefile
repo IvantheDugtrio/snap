@@ -2,7 +2,12 @@ ifndef CXXFLAGS
   CXXFLAGS = -O3 -Wno-format
 endif
 
-CXXFLAGS += -MMD -ISNAPLib -msse
+ifdef __PPC64__
+  CXXFLAGS += -MMD -ISNAPLib -maltivec
+endif
+ifdef __x86_64__
+  CXXFLAGS += -MMD -ISNAPLib -mavx
+endif
 
 LDFLAGS += -pthread
 
