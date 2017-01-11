@@ -82,14 +82,15 @@ int getpagesize();
 #include <sched.h>  // For sched_setaffinity
 #endif
 
-#ifdef __SSE__
 #ifndef __APPLE__
+#ifdef __PPC64__
+#include "vec128intlib.h"
+#endif
+#ifdef __SSE__
 #include <xmmintrin.h>  // This is currently (in Dec 2013) broken on Mac OS X 10.9 (Apple clang-500.2.79)
+#endif
 #else
 #define _mm_prefetch(...) {}
-#endif
-#elif __PPC64__
-#include "vecmisc.h"
 #endif
 
 typedef int64_t _int64;
